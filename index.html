@@ -29,328 +29,329 @@
 	</body>
 	<script type="text/javascript" src="static/resources/preloaded.js"></script>
 	<script type="text/javascript">
-		// ----------------------------------------------------------------------
-		class ValidatorSet {
-		  constructor() { this.setObjects = []; }
-		  addToSet(obj) { this.setObjects.push(obj); }
-		  validate() {
-		    let temp = [];
-		    for (const obj of this.setObjects) {
-		      if (obj.value != null) {
-		        if (obj.value <= 0 || obj.value > 9) return false;
-		        else if (temp.includes(obj.value)) return false;
-		        else temp.push(obj.value);
-		      }
-		    }
-		    return true;
-		  }
-		}
-
-		class SudokuCell {
-		  constructor(value) { this.val = value; }
-		  get value () { return this.val; }
-		  set value (val) { this.val = val; }
-			reset() { this.val = null; }
-		  getHTML(i, j) {
-		    return `<td class="sudoku-cell" title="" id="s-${i}-${j}">${(this.val != null) ? this.val : " "}</td>`;
-		  }
-		}
-
-		class SudokuBoard {
-		  constructor() {
-		    this.rowValidators = [];
-		    this.columnValidators = [];
-		    this.blockValidators = [];
-		    this.board = [];
-		    this.initialize();
-		  }
-
-		  initialize() {
-		    let i = 1;
-		    while (i <= 9) {
-		      this.rowValidators.push(new ValidatorSet());
-		      this.columnValidators.push(new ValidatorSet());
-		      this.blockValidators.push(new ValidatorSet());
-		      i++;
-		    }
-		    i = 0;
-		    while (i < 9) {
-		      let j = 0;
-		      let tempArr = [];
-		      while (j < 9) {
-		        const newCell = new SudokuCell(null);
-		        tempArr.push(newCell);
-		        this.rowValidators[i].addToSet(newCell);
-		        this.columnValidators[j].addToSet(newCell);
-		        this.blockValidators[(Math.floor(i/3)*3) + Math.floor(j/3)].addToSet(newCell);
-		        j++;
-		      }
-		      this.board.push(tempArr);
-		      i++;
-		    }
-		  }
-
-		  reset() {
-		    let i = 0;
-		    while (i < 9) {
-		      let j = 0;
-		      while (j < 9) {
-		        this.board[i][j].reset();
-		        j++;
-		      }
-		      i++;
-		    }
-		  }
-
-		  validateBoard() {
-		    let i = 0;
-		    while (i < 9) {
-		      if (this.rowValidators[i].validate() == false ||
-		          this.columnValidators[i].validate() == false ||
-		          this.blockValidators[i].validate() == false) {
-		        return false;
-		      }
-		      i++;
-		    }
-		    return true;
-		  }
-
-		  validateCell(i, j) {
-		    return (this.rowValidators[i].validate() &&
-		      this.columnValidators[j].validate() &&
-		      this.blockValidators[(Math.floor(i/3)*3) + Math.floor(j/3)].validate());
-		  }
-
-		  setValueToCell(i, j, val) {
-		    const prev_value = this.board[i][j].value;
-		    this.board[i][j].value = val;
-		    if (this.validateCell(i, j) == false) {
-		      this.board[i][j].value = prev_value;
-		      return false;
-		    }
-		    return true;
-		  }
-
-			getPossibleOptions(i, j) {
-				let possibles = [];
-				if (this.board[i][j].value == null) {
-					let choice = 1;
-					while (choice <= 9) {
-						if (this.setValueToCell(i, j, choice))
-								possibles.push(choice);
-						choice++;
-					}
-					this.board[i][j].reset();
+	// ----------------------------------------------------------------------
+	class ValidatorSet {
+		constructor() { this.setObjects = []; }
+		addToSet(obj) { this.setObjects.push(obj); }
+		validate() {
+			let temp = [];
+			for (const obj of this.setObjects) {
+				if (obj.value != null) {
+					if (obj.value <= 0 || obj.value > 9) return false;
+					else if (temp.includes(obj.value)) return false;
+					else temp.push(obj.value);
 				}
-				return possibles;
 			}
+			return true;
+		}
+	}
 
-		  getHTML() {
-		    let htmlStr = "";
-		    let i = 0;
-		    while (i < 9) {
-		      htmlStr += "<tr>"
-		      let j = 0;
-		      while (j < 9) {
-		        htmlStr += this.board[i][j].getHTML(i, j);
-		        j++;
-		      }
-		      htmlStr += "</tr>";
-		      i++;
-		    }
-		    return htmlStr;
-		  }
+	class SudokuCell {
+		constructor(value) { this.val = value; }
+		get value () { return this.val; }
+		set value (val) { this.val = val; }
+		reset() { this.val = null; }
+		getHTML(i, j) {
+			return `<td class="sudoku-cell" title="" id="s-${i}-${j}">${(this.val != null) ? this.val : " "}</td>`;
+		}
+	}
+
+	class SudokuBoard {
+		constructor() {
+			this.rowValidators = [];
+			this.columnValidators = [];
+			this.blockValidators = [];
+			this.board = [];
+			this.initialize();
 		}
 
-		//--------------------------------------------------------------------------
+		initialize() {
+			let i = 1;
+			while (i <= 9) {
+				this.rowValidators.push(new ValidatorSet());
+				this.columnValidators.push(new ValidatorSet());
+				this.blockValidators.push(new ValidatorSet());
+				i++;
+			}
+			i = 0;
+			while (i < 9) {
+				let j = 0;
+				let tempArr = [];
+				while (j < 9) {
+					const newCell = new SudokuCell(null);
+					tempArr.push(newCell);
+					this.rowValidators[i].addToSet(newCell);
+					this.columnValidators[j].addToSet(newCell);
+					this.blockValidators[(Math.floor(i/3)*3) + Math.floor(j/3)].addToSet(newCell);
+					j++;
+				}
+				this.board.push(tempArr);
+				i++;
+			}
+		}
 
-		$(document).ready(function() {
-		  const board = new SudokuBoard();
-			var intVal = null;
-			var blinkCounter = 0;
-			var colorOpacity = 0.8;
-			var optColors = {
-				9: `rgba(255,0,51,${colorOpacity})`,
-				8: `rgba(223,13,45,${colorOpacity})`,
-				7: `rgba(191,26,38,${colorOpacity})`,
-				6: `rgba(159,38,32,${colorOpacity})`,
-				5: `rgba(128,51,26,${colorOpacity})`,
-				4: `rgba(96,64,19,${colorOpacity})`,
-				3: `rgba(64,77,13,${colorOpacity})`,
-				2: `rgba(32,89,6,${colorOpacity})`,
-				1: `rgba(0,102,0,${colorOpacity})`,
-			};
+		reset() {
+			let i = 0;
+			while (i < 9) {
+				let j = 0;
+				while (j < 9) {
+					this.board[i][j].reset();
+					j++;
+				}
+				i++;
+			}
+		}
 
-			function colorBlink(elemSelector, blinkColor) {
-				if (intVal) {
+		validateBoard() {
+			let i = 0;
+			while (i < 9) {
+				if (this.rowValidators[i].validate() == false ||
+				this.columnValidators[i].validate() == false ||
+				this.blockValidators[i].validate() == false) {
+					return false;
+				}
+				i++;
+			}
+			return true;
+		}
+
+		validateCell(i, j) {
+			return (this.rowValidators[i].validate() &&
+			this.columnValidators[j].validate() &&
+			this.blockValidators[(Math.floor(i/3)*3) + Math.floor(j/3)].validate());
+		}
+
+		setValueToCell(i, j, val) {
+			const prev_value = this.board[i][j].value;
+			this.board[i][j].value = val;
+			if (this.validateCell(i, j) == false) {
+				this.board[i][j].value = prev_value;
+				return false;
+			}
+			return true;
+		}
+
+		getPossibleOptions(i, j) {
+			let possibles = [];
+			if (this.board[i][j].value == null) {
+				let choice = 1;
+				while (choice <= 9) {
+					if (this.setValueToCell(i, j, choice))
+						possibles.push(choice);
+					choice++;
+				}
+				this.board[i][j].reset();
+			}
+			return possibles;
+		}
+
+		getHTML() {
+			let htmlStr = "";
+			let i = 0;
+			while (i < 9) {
+				htmlStr += "<tr>"
+				let j = 0;
+				while (j < 9) {
+					htmlStr += this.board[i][j].getHTML(i, j);
+					j++;
+				}
+				htmlStr += "</tr>";
+				i++;
+			}
+			return htmlStr;
+		}
+	}
+
+	//--------------------------------------------------------------------------
+
+	$(document).ready(function() {
+		const board = new SudokuBoard();
+		var intVal = null;
+		var blinkCounter = 0;
+		var colorOpacity = 0.8;
+		var optColors = {
+			9: `rgba(255,0,51,${colorOpacity})`,
+			8: `rgba(223,13,45,${colorOpacity})`,
+			7: `rgba(191,26,38,${colorOpacity})`,
+			6: `rgba(159,38,32,${colorOpacity})`,
+			5: `rgba(128,51,26,${colorOpacity})`,
+			4: `rgba(96,64,19,${colorOpacity})`,
+			3: `rgba(64,77,13,${colorOpacity})`,
+			2: `rgba(32,89,6,${colorOpacity})`,
+			1: `rgba(0,102,0,${colorOpacity})`,
+		};
+
+		function colorBlink(elemSelector, blinkColor) {
+			if (intVal) {
+				clearInterval(intVal);
+				intVal = null;
+				blinkCounter = 0;
+				$(".sudoku-cell").removeAttr("style");
+			}
+			intVal = setInterval(function() {
+				if (blinkCounter == 6) {
+					$(elemSelector).removeAttr("style");
 					clearInterval(intVal);
 					intVal = null;
 					blinkCounter = 0;
-					$(".sudoku-cell").removeAttr("style");
-				}
-				intVal = setInterval(function() {
-					if (blinkCounter == 6) {
-						$(elemSelector).removeAttr("style");
-						clearInterval(intVal);
-						intVal = null;
-						blinkCounter = 0;
-					} else {
-						if (blinkCounter % 2 == 0) {
-							$(elemSelector).css("background-color", blinkColor);
-							$(elemSelector).css("color", "white");
-							$(elemSelector).css("font-weight", "bold");
-						} else {
-							$(elemSelector).css("background-color", "");
-							$(elemSelector).css("color", "");
-							$(elemSelector).css("font-weight", "");
-						}
-						blinkCounter++;
-					}
-				}, 200);
-			}
-
-		  // Inital display of sudoku board
-		  $("#sudoku-board").html(function() {
-		    let internal_str = "";
-		    let nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-		    let i = 0;
-		    while (i < 9) {
-		      let j = 0;
-		      while (j < 9) {
-		        let indx = (j+(3*(i%3))+Math.floor(i/3))%9;
-		        board.setValueToCell(i, j, nums[indx]);
-		        j++;
-		      }
-		      i++;
-		    }
-		    return board.getHTML();
-		  });
-
-		  $("#edit-mode").click(function() {
-		    if ($(this).hasClass("enabled")) {
-		      // if already enabled, then disable it
-		      $(this).removeClass("enabled");
-		      $("#sudoku-board").html(board.getHTML());
-		      $("#edit-grid").addClass("d-none");
-		    } else {
-		      // enable the edit-mode
-		      $(this).addClass("enabled");
-					$("#sudoku-board").html(board.getHTML());
-		      $("#helper-mode").removeClass("enabled");
-		      $(".sudoku-cell").addClass("cell-edit");
-					$("#edit-grid").addClass("d-none");
-		      $(".sudoku-cell").click(function(e) {
-						$(this).css("background-color", "#2d949c");
-		        let elementPos = $(this).offset();
-						let matchCellID = /s-([0-9])-([0-9])/g.exec($(this).attr("id"));
-						let cellIndex = {i : parseInt(matchCellID[1]), j : parseInt(matchCellID[2])};
-		        $("#edit-grid").css({top : (elementPos.top + 40) + "px", left : (elementPos.left + 40)+ "px"});
-		        $("#edit-grid").removeClass("d-none");
-						let prevVal = $(this).html()
-		        $("#edit-grid-val").val(prevVal);
-		        $("#edit-grid-icon").off().click(function() {
-							$("#edit-grid").addClass("d-none");
-		          let enteredVal = $("#edit-grid-val").val().trim();
-							if (prevVal === enteredVal) {
-								// Nothing has changed, just return
-								return;
-							}
-							let accepted = true;
-							if (enteredVal === "") {
-								board.setValueToCell(cellIndex.i, cellIndex.j, null);
-								$(`#s-${cellIndex.i}-${cellIndex.j}`).html(enteredVal);
-							} else if (!isNaN(parseFloat(enteredVal)) && isFinite(enteredVal) && Number.isInteger(parseInt(enteredVal))) {
-								enteredValInt = parseInt(enteredVal);
-								if (board.setValueToCell(cellIndex.i, cellIndex.j, enteredValInt))
-									$(`#s-${cellIndex.i}-${cellIndex.j}`).html(enteredVal);
-								else
-									accepted = false;
-		          } else {
-								accepted = false;
-							}
-							if (accepted == true) {
-								colorBlink(`#s-${cellIndex.i}-${cellIndex.j}`, "green");
-							}  else {
-								colorBlink(`#s-${cellIndex.i}-${cellIndex.j}`, "red");
-							}
-		        });
-		      });
-		    }
-		  });
-
-		  $("#helper-mode").click(function() {
-		    if ($(this).hasClass("enabled")) {
-		      // if already enabled, then disable it
-		      $(this).removeClass("enabled");
-					$("#sudoku-board").html(board.getHTML());
 				} else {
-					// enable the helper mode
-					$(this).addClass("enabled");
-					$("#edit-mode").removeClass("enabled");
-					$("#edit-grid").addClass("d-none");
-					$("#sudoku-board").html(board.getHTML());
-					$(".sudoku-cell").each(function() {
-						$(this).addClass("cell-helper");
-						let matchCellID = /s-([0-9])-([0-9])/g.exec($(this).attr("id"));
-						let cellIndex = {i : parseInt(matchCellID[1]), j : parseInt(matchCellID[2])};
-						let opts = board.getPossibleOptions(cellIndex.i, cellIndex.j);
-						if (opts.length > 0) {
-							$(this).css("background-color", optColors[opts.length]);
-							$(this).css("font-weight", "bold");
-							$(this).css("font-size", "12px");
-							$(this).html(opts.join(" , "));
-						}
-					})
+					if (blinkCounter % 2 == 0) {
+						$(elemSelector).css("background-color", blinkColor);
+						$(elemSelector).css("color", "white");
+						$(elemSelector).css("font-weight", "bold");
+					} else {
+						$(elemSelector).css("background-color", "");
+						$(elemSelector).css("color", "");
+						$(elemSelector).css("font-weight", "");
+					}
+					blinkCounter++;
 				}
-		  });
+			}, 200);
+		}
 
-		  $("#solve-next").click(function() {
+		// Inital display of sudoku board
+		$("#sudoku-board").html(function() {
+			let internal_str = "";
+			let nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+			let i = 0;
+			while (i < 9) {
+				let j = 0;
+				while (j < 9) {
+					let indx = (j+(3*(i%3))+Math.floor(i/3))%9;
+					board.setValueToCell(i, j, nums[indx]);
+					j++;
+				}
+				i++;
+			}
+			return board.getHTML();
+		});
+
+		$("#edit-mode").click(function() {
+			if ($(this).hasClass("enabled")) {
+				// if already enabled, then disable it
+				$(this).removeClass("enabled");
+				$("#sudoku-board").html(board.getHTML());
 				$("#edit-grid").addClass("d-none");
-				let i = 0;
-				while (i < 9) {
-					let j = 0;
-					while (j < 9) {
-						let opts = board.getPossibleOptions(i, j);
-						if (opts.length == 1) {
-							$(`#s-${i}-${j}`).html(`${opts[0]}`);
-							board.setValueToCell(i, j, opts[0]);
-							colorBlink(`#s-${i}-${j}`, "green");
+			} else {
+				// enable the edit-mode
+				$(this).addClass("enabled");
+				$("#sudoku-board").html(board.getHTML());
+				$("#helper-mode").removeClass("enabled");
+				$(".sudoku-cell").addClass("cell-edit");
+				$("#edit-grid").addClass("d-none");
+				$(".sudoku-cell").click(function(e) {
+					$(this).css("background-color", "#2d949c");
+					let elementPos = $(this).offset();
+					let matchCellID = /s-([0-9])-([0-9])/g.exec($(this).attr("id"));
+					let cellIndex = {i : parseInt(matchCellID[1]), j : parseInt(matchCellID[2])};
+					$("#edit-grid").css({top : (elementPos.top + 40) + "px", left : (elementPos.left + 40)+ "px"});
+					$("#edit-grid").removeClass("d-none");
+					let prevVal = $(this).html()
+					$("#edit-grid-val").val(prevVal);
+					$("#edit-grid-icon").off().click(function() {
+						$("#edit-grid").addClass("d-none");
+						let enteredVal = $("#edit-grid-val").val().trim();
+						if (prevVal === enteredVal) {
+							// Nothing has changed, just return
 							return;
 						}
-						j++;
-					}
-					i++;
-				}
-			});
-
-			$("#load-random").click(function() {
-				board.reset();
-				$("#helper-mode").removeClass("enabled");
-				$("#edit-mode").removeClass("enabled");
-				$("#edit-grid").addClass("d-none");
-				let indx = Math.floor(Math.random() * sudokus.length);
-				let i = 0;
-				while (i < 9) {
-					let j = 0;
-					while (j < 9) {
-						if (sudokus[indx][i][j] != 0) {
-							board.setValueToCell(i, j, sudokus[indx][i][j]);
+						let accepted = true;
+						if (enteredVal === "") {
+							board.setValueToCell(cellIndex.i, cellIndex.j, null);
+							$(`#s-${cellIndex.i}-${cellIndex.j}`).html(enteredVal);
+						} else if (!isNaN(parseFloat(enteredVal)) && isFinite(enteredVal) && Number.isInteger(parseInt(enteredVal))) {
+							enteredValInt = parseInt(enteredVal);
+							if (board.setValueToCell(cellIndex.i, cellIndex.j, enteredValInt)) {
+								$(`#s-${cellIndex.i}-${cellIndex.j}`).html(enteredVal);
+							} else {
+								accepted = false;
+							}
+						} else {
+							accepted = false;
 						}
-						j++;
-					}
-					i++;
-				}
-				$("#sudoku-board").html(board.getHTML());
-			});
+						if (accepted == true) {
+							colorBlink(`#s-${cellIndex.i}-${cellIndex.j}`, "green");
+						} else {
+							colorBlink(`#s-${cellIndex.i}-${cellIndex.j}`, "red");
+						}
+					});
+				});
+			}
+		});
 
-		  $("#reset").click(function() {
-		    board.reset();
-		    $("#sudoku-board").html(board.getHTML());
-				$("#helper-mode").removeClass("enabled");
+		$("#helper-mode").click(function() {
+			if ($(this).hasClass("enabled")) {
+				// if already enabled, then disable it
+				$(this).removeClass("enabled");
+				$("#sudoku-board").html(board.getHTML());
+			} else {
+				// enable the helper mode
+				$(this).addClass("enabled");
 				$("#edit-mode").removeClass("enabled");
 				$("#edit-grid").addClass("d-none");
-		  });
+				$("#sudoku-board").html(board.getHTML());
+				$(".sudoku-cell").each(function() {
+					$(this).addClass("cell-helper");
+					let matchCellID = /s-([0-9])-([0-9])/g.exec($(this).attr("id"));
+					let cellIndex = {i : parseInt(matchCellID[1]), j : parseInt(matchCellID[2])};
+					let opts = board.getPossibleOptions(cellIndex.i, cellIndex.j);
+					if (opts.length > 0) {
+						$(this).css("background-color", optColors[opts.length]);
+						$(this).css("font-weight", "bold");
+						$(this).css("font-size", "12px");
+						$(this).html(opts.join(" , "));
+					}
+				});
+			}
 		});
+
+		$("#solve-next").click(function() {
+			$("#edit-grid").addClass("d-none");
+			let i = 0;
+			while (i < 9) {
+				let j = 0;
+				while (j < 9) {
+					let opts = board.getPossibleOptions(i, j);
+					if (opts.length == 1) {
+						$(`#s-${i}-${j}`).html(`${opts[0]}`);
+						board.setValueToCell(i, j, opts[0]);
+						colorBlink(`#s-${i}-${j}`, "green");
+						return;
+					}
+					j++;
+				}
+				i++;
+			}
+		});
+
+		$("#load-random").click(function() {
+			board.reset();
+			$("#helper-mode").removeClass("enabled");
+			$("#edit-mode").removeClass("enabled");
+			$("#edit-grid").addClass("d-none");
+			let indx = Math.floor(Math.random() * sudokus.length);
+			let i = 0;
+			while (i < 9) {
+				let j = 0;
+				while (j < 9) {
+					if (sudokus[indx][i][j] != 0) {
+						board.setValueToCell(i, j, sudokus[indx][i][j]);
+					}
+					j++;
+				}
+				i++;
+			}
+			$("#sudoku-board").html(board.getHTML());
+		});
+
+		$("#reset").click(function() {
+			board.reset();
+			$("#sudoku-board").html(board.getHTML());
+			$("#helper-mode").removeClass("enabled");
+			$("#edit-mode").removeClass("enabled");
+			$("#edit-grid").addClass("d-none");
+		});
+	});
 
 	</script>
 </html>
