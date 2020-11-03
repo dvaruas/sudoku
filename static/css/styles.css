@@ -1,0 +1,89 @@
+#sudoku-board {
+  width : 700px;
+  height : 700px;
+  margin-top: 100px;
+  border: #4f4d47 dashed medium;
+  text-align: center;
+  table-layout: fixed;
+}
+
+#sudoku-board td {
+  border: #cfcaba dotted medium;
+  width: 77px;
+  height: 77px;
+  word-wrap: break-word;
+  padding: 3px;
+}
+
+#sudoku-board tr td:nth-child(3) {
+  border-right: #696969 solid medium;
+}
+
+#sudoku-board tr td:nth-child(6) {
+  border-right: #696969 solid medium;
+}
+
+#sudoku-board tr:nth-child(3) td {
+  border-bottom: #696969 solid medium;
+}
+
+#sudoku-board tr:nth-child(6) td {
+  border-bottom: #696969 solid medium;
+}
+
+#edit-mode.enabled {
+  color: black;
+  background-color: white;
+  font-weight: bold;
+  transition: all 1s ease-in;
+}
+
+#helper-mode.enabled {
+  color: black;
+  background-color: white;
+  font-weight: bold;
+  transition: all 1s ease-in;
+}
+
+.cell-edit {
+  cursor: pointer;
+}
+
+.cell-edit:hover {
+  background-color: #a6a6a6;
+  color: white;
+  font-weight: bold;
+}
+
+.cell-helper:hover {
+  background-color: #a6a6a6;
+  color: white;
+  font-weight: bold;
+}
+
+#edit-grid {
+  display: flex;
+  position: absolute;
+  width: 100px;
+  z-index: 10;
+  border: #c4c4c4 solid medium;
+  border-radius: 10px;
+  background-color: #f0f0f0;
+}
+
+#edit-grid-val {
+  width: 40px;
+  border: black solid thin;
+  border-radius: 10px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+#edit-grid-icon {
+  opacity: 0.8;
+}
+
+#edit-grid-icon:hover {
+  opacity : 1.0;
+  cursor: pointer;
+}
