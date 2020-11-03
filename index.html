@@ -240,6 +240,7 @@
 				$(".sudoku-cell").addClass("cell-edit");
 				$("#edit-grid").addClass("d-none");
 				$(".sudoku-cell").click(function(e) {
+					$(".sudoku-cell").removeAttr("style");
 					$(this).css("background-color", "#2d949c");
 					let elementPos = $(this).offset();
 					let matchCellID = /s-([0-9])-([0-9])/g.exec($(this).attr("id"));
