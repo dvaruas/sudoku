@@ -1,10 +1,9 @@
-# sudoku
+# Sudoku
 
-Sudoku game, with helper and edit mode. And some pre-loaded puzzles.
+Check out :point_right: [here](https://dvaruas.github.io/sudoku/)
 
-Can solve easy puzzles.
+with x-ray mode,,,!!! And some pre-loaded puzzles.
 
-TODO :
-* Solve complex puzzles
-* Possible to upload puzzles? Not sure for static pages!
-* Maybe put a nice logo for the navbar brand
+Has Auto-solver powered by **Crook's algorithm**. See details [here](https://www.ams.org/notices/200904/tx090400460p.pdf).
+
+**Caveat :** Crook's algorithm has a provision for random guessing which is not done by us. Guessing would need the solver to solve the board completely to make sure it's guess is correct.  
