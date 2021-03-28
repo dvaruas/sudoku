@@ -31,6 +31,20 @@ $(document).ready(function() {
     }, 200);
   }
 
+  function updateHelperText() {
+    if ( !$("#helper-mode").hasClass("enabled") ) { return; }
+    
+    $(".sudoku-cell").each(function() {
+      let matchCellID = /s-([0-9])-([0-9])/g.exec($(this).attr("id"));
+      let cellIndex = {i : parseInt(matchCellID[1]), j : parseInt(matchCellID[2])};
+      let opts = board.getPossibleOptions(cellIndex.i, cellIndex.j);
+      if (opts.length > 0) {
+        $(this).html(opts.join(" , "));
+        $(this).css("background-color", "#f7f7f7");
+        $(this).css("font-size", "10px");
+      }
+    });
+  }
   // Initial display of sudoku board
   $("#sudoku-board").html(function() {
     let nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -112,16 +126,7 @@ $(document).ready(function() {
       $("#edit-mode").removeClass("enabled");
       $("#edit-grid").addClass("d-none");
       $("#sudoku-board").html(board.getHTML());
-      $(".sudoku-cell").each(function() {
-        let matchCellID = /s-([0-9])-([0-9])/g.exec($(this).attr("id"));
-        let cellIndex = {i : parseInt(matchCellID[1]), j : parseInt(matchCellID[2])};
-        let opts = board.getPossibleOptions(cellIndex.i, cellIndex.j);
-        if (opts.length > 0) {
-          $(this).html(opts.join(" , "));
-          $(this).css("background-color", "#f7f7f7");
-          $(this).css("font-size", "10px");
-        }
-      });
+      updateHelperText();
     }
   });
 
@@ -136,6 +141,7 @@ $(document).ready(function() {
           $(`#s-${i}-${j}`).html(`${solution}`);
           board.setValueToCell(i, j, solution);
           colorBlink(`#s-${i}-${j}`, "green");
+          updateHelperText();
           return;
         }
       }
@@ -146,6 +152,7 @@ $(document).ready(function() {
     if (solution != null) {
       $(`#s-${solution.x}-${solution.y}`).html(`${solution.value}`);
       board.setValueToCell(solution.x, solution.y, solution.value);
+      updateHelperText();
       colorBlink(`#s-${solution.x}-${solution.y}`, "green");
     }
 
