@@ -69,7 +69,7 @@ class NewPuzzle:
                     line += f"{i}"
                 if j % 3 == 0:
                     line += " "
-                line += f"{self.__board[i][j]:2d}"
+                line += f"{self.__board[i][j]:2d}" if self.__board[i][j] > 0 else " -"
             lines.append(line)
         return '\n'.join(lines)
 
@@ -78,15 +78,16 @@ class NewPuzzle:
         for i in range(9):
             for j in range(9):
                 if self.__board[i][j] != 0:
-                    data.append((i, j, self.__board[i][j]))
+                    data.append([i, j, self.__board[i][j]])
         return data
 
 
 if __name__ == "__main__":
+    continue_script = True
     obj = NewPuzzle()
 
     print("Ctrl+c to quit entering data")
-    while True:
+    while continue_script:
         print(obj)
         try:
             i = int(input("\nEnter row number : "))
@@ -98,9 +99,12 @@ if __name__ == "__main__":
             pass
         except KeyboardInterrupt:
             break
+        except EOFError:
+            # We wish to opt out of the script
+            continue_script = False
 
     choice = "n"
-    while True:
+    while continue_script:
         choice = input("\nWould you like to save new puzzle data? (y/n) : ").strip()
         if choice in ["y", "n"]:
             break
