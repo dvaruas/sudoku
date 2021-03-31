@@ -162,53 +162,134 @@ class SudokuBoard {
     return false;
   }
 
-  basicSolver(i, j) {
+  basicSolver() {
     console.log("Using Basic solver");
 
-    let solution = this.board[i][j].value;
-    if (solution == null) {
-      if ( !(this.board[i][j].possibilies & (this.board[i][j].possibilies - 1)) ) {
-        solution = Math.log2(this.board[i][j].possibilies) + 1;
+    let solvedCount = 0;
+    for (let i = 0; i < 9; i++) {
+      for (let j = 0; j < 9; j++) {
+        if (this.board[i][j].value == null) {
+          if ( !(this.board[i][j].possibilies & (this.board[i][j].possibilies - 1)) ) {
+            return {'x' : i, 'y' : j, 'value' : Math.log2(this.board[i][j].possibilies) + 1};
+          }
+        } else {
+          solvedCount += 1;
+        }
       }
     }
-    return solution;
+
+    if (solvedCount == 81) {
+      // The board is completely solved
+      return true;
+    }
+
+    return null;
   }
 
   advancedSolver() {
     // This makes use of the Crook's algorithm
     console.log("Using advanced solver : Crook's algorithm without Random guessing");
 
+    // Finding solution through forced numbers
     for (let k = 0; k < 9; k++) {
       let matchOpportunities = [
         this.rowValidators[k].objects,
         this.columnValidators[k].objects,
-        this.blockValidators[(Math.floor(k/3)*3) + Math.floor(k/3)].objects
+        this.blockValidators[k].objects
       ];
       for (let opportunity of matchOpportunities) {
         let possible_sets = opportunity.filter(obj => obj.possibilies > 0);
+
         for (let i = 0; i < possible_sets.length; i++) {
-          let preemtive_set = [];
-          let others = [];
+          let testBitStream = possible_sets[i].possibilies;
           for (let j = 0; j < possible_sets.length; j++) {
-            if ((possible_sets[i].possibilies | possible_sets[j].possibilies) == possible_sets[i].possibilies) {
-              preemtive_set.push(possible_sets[j]);
-            } else {
-              others.push(possible_sets[j]);
+            if ( i != j ) {
+              testBitStream &= ~possible_sets[j].possibilies;
+              if (testBitStream == 0) { break; }
             }
           }
-          if (preemtive_set.length == possible_sets[i].choice_list.length) {
-            // This is a proper preemtive set.
-            for (let obj of others) {
-              let testBitStream = obj.possibilies & (obj.possibilies ^ possible_sets[i].possibilies);
-              if ( testBitStream > 0 && !(testBitStream & (testBitStream - 1)) ) {
-                return {x : obj.x, y : obj.y, value : Math.log2(testBitStream) + 1};
-              }
-            }
+          if ( testBitStream > 0 && !(testBitStream & (testBitStream - 1)) ) {
+            return {x : possible_sets[i].x, y : possible_sets[i].y, value : Math.log2(testBitStream) + 1};
           }
         }
       }
     }
 
+    // Finding solution through pre-emptive sets
+    let finalSets = [];
+    for (let k = 2; k < 9; k++) {
+      let matchOpportunities = {
+        "row" : this.rowValidators[k].objects,
+        "column" : this.columnValidators[k].objects,
+        "block" : this.blockValidators[k].objects
+      };
+
+      for (let oType in matchOpportunities) {
+        let possible_sets = matchOpportunities[oType].filter(obj => obj.possibilies > 0);
+        let elemsList = new Array();
+        for (let [indx, obj] of possible_sets.entries()) {
+          elemsList.push({ 'obj' : [obj], 'mask' : (1 << indx) });
+        }
+        let comboSet = {1 : elemsList};
+
+        for (let i = 2; i < possible_sets.length; i++) {
+          comboSet[i] = new Array();
+          for (let entry of comboSet[i-1]) {
+            for (let singleObj of comboSet[1]) {
+              if ((entry.mask | singleObj.mask) != entry.mask) {
+                let newObj = [...entry.obj];
+                newObj.push(singleObj.obj[0]);
+                comboSet[i].push({ 'obj' : newObj, 'mask' : (entry.mask | singleObj.mask)} );
+              }
+            }
+          }
+        }
+
+        for (let i = 2; i < possible_sets.length; i++) {
+          let checkElements = comboSet[i].filter(cElem => {
+            let objMask = 0;
+            cElem.obj.forEach(obj => { objMask |= obj.possibilies; });
+            return cElem.obj.length == (Number(objMask).toString(2).match(/1/g) || []).length;
+          });
+          for (let elem of checkElements) {
+            finalSets.push({"objs" : elem.obj, "type" : oType});
+          }
+        }
+      }
+    }
+
+    for (let objList of finalSets) {
+      let otherObjects = [];
+      let objX = objList.objs[0].x;
+      let objY = objList.objs[0].y;
+
+      if (objList.type == "row") {
+        otherObjects = this.rowValidators[objX].objects.filter(obj => !objList.objs.includes(obj));
+      } else if (objList.type == "column") {
+        otherObjects = this.columnValidators[objY].objects.filter(obj => !objList.objs.includes(obj));
+      } else if (objList.type == "block") {
+        otherObjects = this.blockValidators[(Math.floor(objX/3)*3) + Math.floor(objY/3)].objects.filter(obj => !objList.objs.includes(obj));
+      }
+
+      let cumulativeBit = 0;
+      for (let obj of objList.objs) {
+        cumulativeBit |= obj.possibilies;
+      }
+      let theList = [];
+      for (let indx = 0; indx < 9; indx++) {
+        if ((cumulativeBit & (1 << indx)) != 0) {
+          theList.push(indx + 1);
+        }
+      }
+
+      otherObjects.forEach(obj => {
+        theList.forEach(listItem => {
+          obj.remove_choice_bit = listItem;
+        });
+      });
+
+    }
+    
     return null;
   }
 
