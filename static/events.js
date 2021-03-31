@@ -2,29 +2,33 @@ $(document).ready(function() {
   var board = new SudokuBoard();
   var intVal = null;
   var blinkCounter = 0;
+  var currBlinkSelector = null;
 
-  function colorBlink(elemSelector, blinkColor) {
+  function colorBlink(elemSelector, success) {
     if (intVal) {
       clearInterval(intVal);
       intVal = null;
       blinkCounter = 0;
-      $(".sudoku-cell").removeAttr("style");
+      if (currBlinkSelector != null) {
+        $(currBlinkSelector).removeClass('sudoku-success sudoku-fail');
+        currBlinkSelector = null;
+      }
     }
     intVal = setInterval(function() {
       if (blinkCounter == 6) {
-        $(elemSelector).removeAttr("style");
         clearInterval(intVal);
         intVal = null;
         blinkCounter = 0;
+        currBlinkSelector = null;
       } else {
+        currBlinkSelector = elemSelector;
+        $(elemSelector).removeClass("sudoku-help");
         if (blinkCounter % 2 == 0) {
-          $(elemSelector).css("background-color", blinkColor);
-          $(elemSelector).css("color", "white");
-          $(elemSelector).css("font-weight", "bold");
+          if (success == true) { $(elemSelector).addClass("sudoku-success"); }
+          else { $(elemSelector).addClass("sudoku-fail"); }
         } else {
-          $(elemSelector).css("background-color", "");
-          $(elemSelector).css("color", "");
-          $(elemSelector).css("font-weight", "");
+          if (success == true) { $(elemSelector).removeClass("sudoku-success"); }
+          else { $(elemSelector).removeClass("sudoku-fail"); }
         }
         blinkCounter++;
       }
@@ -33,18 +37,20 @@ $(document).ready(function() {
 
   function updateHelperText() {
     if ( !$("#helper-mode").hasClass("enabled") ) { return; }
-    
+
     $(".sudoku-cell").each(function() {
       let matchCellID = /s-([0-9])-([0-9])/g.exec($(this).attr("id"));
       let cellIndex = {i : parseInt(matchCellID[1]), j : parseInt(matchCellID[2])};
       let opts = board.getPossibleOptions(cellIndex.i, cellIndex.j);
       if (opts.length > 0) {
+        $(this).addClass("sudoku-help");
         $(this).html(opts.join(" , "));
-        $(this).css("background-color", "#f7f7f7");
-        $(this).css("font-size", "10px");
+      } else {
+        $(this).removeClass("sudoku-help");
       }
     });
   }
+
   // Initial display of sudoku board
   $("#sudoku-board").html(function() {
     let nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -61,39 +67,59 @@ $(document).ready(function() {
     return board.getHTML();
   });
 
+  function mode_change(mode_name, mode_status) {
+    if (mode_name == "edit") {
+      if (mode_status == "on") {
+        $("#edit-mode").addClass("enabled");
+        $('.sudoku-cell').addClass("sudoku-editable");
+      } else if (mode_status == "off") {
+        $("#edit-mode").removeClass("enabled");
+        $('.sudoku-cell').removeClass("sudoku-editable sudoku-editcell");
+      }
+    } else if (mode_name == "helper") {
+      if (mode_status == "on") {
+        $("#helper-mode").addClass("enabled");
+      } else if (mode_status == "off") {
+        $(".sudoku-cell").removeClass("sudoku-help");
+        $("#helper-mode").removeClass("enabled");
+      }
+    }
+  }
+
   $("#edit-mode").click(function() {
+    $("#edit-grid").addClass("d-none");
+    $("#sudoku-board").html(board.getHTML());
+
     if ($(this).hasClass("enabled")) {
-      // if already enabled, then disable it
-      $(this).removeClass("enabled");
-      $("#sudoku-board").html(board.getHTML());
-      $("#edit-grid").addClass("d-none");
+      mode_change("edit", "off");
     } else {
-      // enable the edit-mode
-      $(this).addClass("enabled");
-      $("#sudoku-board").html(board.getHTML());
-      $("#helper-mode").removeClass("enabled");
-      $(".sudoku-cell").addClass("cell-edit");
-      $("#edit-grid").addClass("d-none");
+      mode_change("helper", "off");
+      mode_change("edit", "on");
+
       $(".sudoku-cell").click(function(e) {
-        $(".sudoku-cell").removeAttr("style");
-        $(this).css("background-color", "#2d949c");
+        $(".sudoku-cell").removeClass("sudoku-editcell");
+        $(this).addClass("sudoku-editcell");
+
         let elementPos = $(this).offset();
         let matchCellID = /s-([0-9])-([0-9])/g.exec($(this).attr("id"));
         let cellIndex = {i : parseInt(matchCellID[1]), j : parseInt(matchCellID[2])};
+
+        // Make changes to the edit pane
         $("#edit-grid").css({top : (elementPos.top + 40) + "px", left : (elementPos.left + 40)+ "px"});
         $("#edit-grid").removeClass("d-none");
         let prevVal = $(this).html()
         $("#edit-grid-val").val(prevVal);
         $("#edit-grid-icon").off().click(function() {
           $("#edit-grid").addClass("d-none");
+          $(`#s-${cellIndex.i}-${cellIndex.j}`).removeClass("sudoku-editcell");
           let enteredVal = $("#edit-grid-val").val().trim();
           if (prevVal === enteredVal) {
-            // Nothing has changed, just return
+            // Nothing has changed, so nothing to do here
             return;
           }
           let accepted = true;
           if (enteredVal === "") {
-            // Do not accept this as a valid answer, once filled and accepted it's done!
+            // This is not a valid number, ignore!
             accepted = false;
           } else if (!isNaN(parseFloat(enteredVal)) && isFinite(enteredVal) && Number.isInteger(parseInt(enteredVal))) {
             enteredValInt = parseInt(enteredVal);
@@ -106,9 +132,11 @@ $(document).ready(function() {
             accepted = false;
           }
           if (accepted == true) {
-            colorBlink(`#s-${cellIndex.i}-${cellIndex.j}`, "green");
+            // An indication of success
+            colorBlink(`#s-${cellIndex.i}-${cellIndex.j}`, true);
           } else {
-            colorBlink(`#s-${cellIndex.i}-${cellIndex.j}`, "red");
+            // An indication of failure
+            colorBlink(`#s-${cellIndex.i}-${cellIndex.j}`, false);
           }
         });
       });
@@ -116,53 +144,53 @@ $(document).ready(function() {
   });
 
   $("#helper-mode").click(function() {
+    $("#sudoku-board").html(board.getHTML());
+    $("#edit-grid").addClass("d-none");
+
     if ($(this).hasClass("enabled")) {
-      // if already enabled, then disable it
-      $(this).removeClass("enabled");
-      $("#sudoku-board").html(board.getHTML());
+      mode_change("helper", "off");
     } else {
-      // enable the helper mode
-      $(this).addClass("enabled");
-      $("#edit-mode").removeClass("enabled");
-      $("#edit-grid").addClass("d-none");
-      $("#sudoku-board").html(board.getHTML());
+      mode_change("edit", "off");
+      mode_change("helper", "on");
       updateHelperText();
     }
   });
 
   $("#solve-next").click(function() {
-    $("#edit-grid").addClass("d-none");
+    if ($(this).prop("disabled")) { return; }
 
-    for (let i = 0; i < 9; i++) {
-      for (let j = 0; j < 9; j++) {
-        if (board.isSolved(i, j)) { continue; }
-        let solution = board.basicSolver(i, j);
-        if (solution != null) {
-          $(`#s-${i}-${j}`).html(`${solution}`);
-          board.setValueToCell(i, j, solution);
-          colorBlink(`#s-${i}-${j}`, "green");
-          updateHelperText();
-          return;
-        }
+    $("#edit-grid").addClass("d-none");
+    mode_change("edit", "off");
+
+    // sometimes solutions require two iterations!
+    for (let counter = 0; counter < 2; counter++) {
+      let solution = board.basicSolver();
+      if (solution == true) {
+        // Returned when the board is already solved! Nothing more to do for us here
+        break;
+      } else if (solution == null) {
+        // Pulling out the big gun..!!
+        solution = board.advancedSolver();
+      }
+
+      updateHelperText();
+
+      if (solution != null) {
+        board.setValueToCell(solution.x, solution.y, solution.value);
+        $(`#s-${solution.x}-${solution.y}`).html(`${solution.value}`);
+        colorBlink(`#s-${solution.x}-${solution.y}`, true);
+        break;
       }
     }
 
-    // pulling out the big gun
-    let solution = board.advancedSolver();
-    if (solution != null) {
-      $(`#s-${solution.x}-${solution.y}`).html(`${solution.value}`);
-      board.setValueToCell(solution.x, solution.y, solution.value);
-      updateHelperText();
-      colorBlink(`#s-${solution.x}-${solution.y}`, "green");
-    }
-
-    // Next option would be to guess the answer, which is not something we do!
+    // Next option would be to make random guesses, which is something we do not do!
   });
 
   $("#load-random").click(function() {
     board.reset();
-    $("#helper-mode").removeClass("enabled");
-    $("#edit-mode").removeClass("enabled");
+    $("#solve-next").prop("disabled", false);
+    mode_change("edit", "off");
+    mode_change("helper", "off");
     $("#edit-grid").addClass("d-none");
     let indx = Math.floor(Math.random() * sudokus.length);
     for (let entry of sudokus[indx]) {
@@ -173,9 +201,10 @@ $(document).ready(function() {
 
   $("#reset").click(function() {
     board.reset();
+    $("#solve-next").prop("disabled", true);
     $("#sudoku-board").html(board.getHTML());
-    $("#helper-mode").removeClass("enabled");
-    $("#edit-mode").removeClass("enabled");
+    mode_change("edit", "off");
+    mode_change("helper", "off");
     $("#edit-grid").addClass("d-none");
   });
 });

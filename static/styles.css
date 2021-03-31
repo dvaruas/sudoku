@@ -7,7 +7,7 @@
   table-layout: fixed;
 }
 
-#sudoku-board .sudoku-cell {
+.sudoku-cell {
   border: #cfcaba dotted medium;
   width: 77px;
   height: 77px;
@@ -16,19 +16,13 @@
   font-size: 20px;
 }
 
-#sudoku-board .sudoku-row .sudoku-cell:nth-child(3) {
+.sudoku-row .sudoku-cell:nth-child(3),
+.sudoku-row .sudoku-cell:nth-child(6) {
   border-right: #696969 solid medium;
 }
 
-#sudoku-board .sudoku-row .sudoku-cell:nth-child(6) {
-  border-right: #696969 solid medium;
-}
-
-#sudoku-board .sudoku-row:nth-child(3) .sudoku-cell {
-  border-bottom: #696969 solid medium;
-}
-
-#sudoku-board .sudoku-row:nth-child(6) .sudoku-cell {
+.sudoku-row:nth-child(3) .sudoku-cell,
+.sudoku-row:nth-child(6) .sudoku-cell {
   border-bottom: #696969 solid medium;
 }
 
@@ -36,30 +30,49 @@
   color: black;
   background-color: white;
   font-weight: bold;
-  transition: all 1s ease-in;
 }
 
 #helper-mode.enabled {
   color: black;
   background-color: white;
   font-weight: bold;
-  transition: all 1s ease-in;
 }
 
-.cell-edit {
+.sudoku-editable {
   cursor: pointer;
 }
 
-.cell-edit:hover {
+.sudoku-editable:hover {
   background-color: #a6a6a6;
   color: white;
   font-weight: bold;
 }
 
-.cell-helper:hover {
+.sudoku-help:hover {
   background-color: #a6a6a6;
   color: white;
   font-weight: bold;
+}
+
+.sudoku-editcell {
+  background-color: #2d949c;
+}
+
+.sudoku-success {
+  background-color: green;
+  color: white;
+  font-weight: bold;
+}
+
+.sudoku-fail {
+  background-color: red;
+  color: white;
+  font-weight: bold;
+}
+
+.sudoku-help {
+  background-color: #f7f7f7;
+  font-size: 10px;
 }
 
 #edit-grid {
