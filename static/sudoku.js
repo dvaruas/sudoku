@@ -4,9 +4,10 @@ class ValidatorSet {
   addToSet(obj) { this.setObjects.push(obj); }
   validate() {
     let temp = Array(10).fill(null);
+    temp[0] = undefined;
     for (const obj of this.setObjects) {
-      if (obj.value != null && obj.value != 0) {
-        if (temp[obj.value] != undefined || temp[obj.value] == 1) { return false; }
+      if (obj.value != null) {
+        if (temp[obj.value] === undefined || temp[obj.value] == 1) { return false; }
         else { temp[obj.value] = 1; }
       }
     }
@@ -49,7 +50,7 @@ class SudokuCell {
   }
   set remove_choice_bit(val) {
     if (this.val != null) return;
-    this.possibilies &= (511 ^ (1 << (val - 1)));
+    this.possibilies &= ~(1 << (val - 1));
   }
 
   reset() {
@@ -226,14 +227,12 @@ class SudokuBoard {
 
       for (let oType in matchOpportunities) {
         let possible_sets = matchOpportunities[oType].filter(obj => obj.possibilies > 0);
-        let elemsList = new Array();
-        for (let [indx, obj] of possible_sets.entries()) {
-          elemsList.push({ 'obj' : [obj], 'mask' : (1 << indx) });
-        }
-        let comboSet = {1 : elemsList};
+        let elemsList = [];
+        possible_sets.forEach((obj, indx) => elemsList.push({ 'obj' : [obj], 'mask' : (1 << indx) }));
 
+        let comboSet = {1 : elemsList};
         for (let i = 2; i < possible_sets.length; i++) {
-          comboSet[i] = new Array();
+          comboSet[i] = [];
           for (let entry of comboSet[i-1]) {
             for (let singleObj of comboSet[1]) {
               if ((entry.mask | singleObj.mask) != entry.mask) {
@@ -247,13 +246,10 @@ class SudokuBoard {
 
         for (let i = 2; i < possible_sets.length; i++) {
           let checkElements = comboSet[i].filter(cElem => {
-            let objMask = 0;
-            cElem.obj.forEach(obj => { objMask |= obj.possibilies; });
+            let objMask = cElem.obj.reduce((res, obj) => res |= obj.possibilies, 0);
             return cElem.obj.length == (Number(objMask).toString(2).match(/1/g) || []).length;
           });
-          for (let elem of checkElements) {
-            finalSets.push({"objs" : elem.obj, "type" : oType});
-          }
+          checkElements.forEach(elem => finalSets.push({"objs" : elem.obj, "type" : oType}));
         }
       }
     }
@@ -271,10 +267,7 @@ class SudokuBoard {
         otherObjects = this.blockValidators[(Math.floor(objX/3)*3) + Math.floor(objY/3)].objects.filter(obj => !objList.objs.includes(obj));
       }
 
-      let cumulativeBit = 0;
-      for (let obj of objList.objs) {
-        cumulativeBit |= obj.possibilies;
-      }
+      let cumulativeBit = objList.objs.reduce((res, obj) => res |= obj.possibilies, 0);
       let theList = [];
       for (let indx = 0; indx < 9; indx++) {
         if ((cumulativeBit & (1 << indx)) != 0) {
@@ -289,7 +282,7 @@ class SudokuBoard {
       });
 
     }
-    
+
     return null;
   }
 

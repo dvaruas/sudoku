@@ -162,26 +162,23 @@ $(document).ready(function() {
     $("#edit-grid").addClass("d-none");
     mode_change("edit", "off");
 
-    // sometimes solutions require two iterations!
-    for (let counter = 0; counter < 2; counter++) {
-      let solution = board.basicSolver();
-      if (solution == true) {
-        // Returned when the board is already solved! Nothing more to do for us here
-        break;
-      } else if (solution == null) {
-        // Pulling out the big gun..!!
-        solution = board.advancedSolver();
-      }
-
-      updateHelperText();
-
-      if (solution != null) {
-        board.setValueToCell(solution.x, solution.y, solution.value);
-        $(`#s-${solution.x}-${solution.y}`).html(`${solution.value}`);
-        colorBlink(`#s-${solution.x}-${solution.y}`, true);
-        break;
+    let solution = board.basicSolver();
+    if (solution == null) {
+      // Pulling out the big gun..!!
+      solution = board.advancedSolver();
+      if (solution == null) {
+        // Might have a chance with basic solver now!
+        solution = board.basicSolver();
       }
     }
+
+    if (solution != null && solution != true) {
+      board.setValueToCell(solution.x, solution.y, solution.value);
+      $(`#s-${solution.x}-${solution.y}`).html(`${solution.value}`);
+      colorBlink(`#s-${solution.x}-${solution.y}`, true);
+    }
+
+    updateHelperText();
 
     // Next option would be to make random guesses, which is something we do not do!
   });
