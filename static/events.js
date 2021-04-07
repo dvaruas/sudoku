@@ -190,9 +190,14 @@ $(document).ready(function() {
     mode_change("helper", "off");
     $("#edit-grid").addClass("d-none");
     let indx = Math.floor(Math.random() * sudokus.length);
-    for (let entry of sudokus[indx]) {
-      board.setValueToCell(entry[0], entry[1], entry[2]);
-    };
+    let col_mask = 8
+    let col_num = 0
+    for (let [row_num, entry] of sudokus[indx].entries()) {
+      let temp_bins = Number(entry).toString().padStart(9, "0").match(/.{1,1}/g);
+      for (let col_num = 0; col_num < 9; col_num++) {
+        board.setValueToCell(row_num, col_num, temp_bins[col_num]);
+      }
+    }
     $("#sudoku-board").html(board.getHTML());
   });
 
