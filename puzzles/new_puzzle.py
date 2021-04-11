@@ -11,14 +11,13 @@ T = TypeVar('T', bound="PuzzleInstance")
 class PuzzleInstance:
     def __init__(self):
         self.board = dict.fromkeys(range(9))
-        for i in range(10):
+        for i in range(9):
             self.board[i] = dict.fromkeys(range(9), 0)
 
     @classmethod
     def create_from_string(cls: T, string_list: str) -> T:
         neu_obj = cls()
         all_num_strs = [s.strip() for s in string_list.split(",")]
-        #print(all_num_strs)
         for i, num_string in enumerate(all_num_strs):
             num_string = num_string.rjust(9, '0')
             for j in range(9):
