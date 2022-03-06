@@ -1,4 +1,86 @@
-$(document).ready(function() {
+$(document).ready(function () {
+  function setSudokuTableAttrs() {
+    let tableSize = Math.floor(Math.min(window.innerHeight, window.innerWidth) * 0.8);
+    tableSize = Math.floor(Math.min(window.innerHeight, window.innerWidth) * 0.8);
+    let marginFromTop = (window.innerHeight - tableSize) / 2;
+    let marginFromLeft = (window.innerWidth - tableSize) / 2;
+
+    let marginFromLeftForButton = marginFromLeft - (tableSize / 20) - 5;
+    let marginFromLeftForRightButton = marginFromLeft + tableSize + 5;
+    let spaceBetweenButtons = (tableSize / 20) + 20;
+
+    $('#sudoku-board')
+      .attr({
+        'width': tableSize,
+        'height': tableSize,
+      })
+      .css({
+        'margin-top': marginFromTop,
+        'margin-left': marginFromLeft,
+      });
+
+    $(".sudoku-cell")
+      .css({
+        'width': tableSize / 13,
+        'height': tableSize / 13,
+        'font-size': tableSize / 40,
+      });
+
+    $(".button-icons")
+      .attr({
+        'width': tableSize / 20,
+        'height': tableSize / 20,
+      });
+
+    $("#github-btn")
+      .css({
+        'top': marginFromTop,
+        'left': marginFromLeftForButton,
+      });
+
+    $("#load-random")
+      .css({
+        'top': marginFromTop + spaceBetweenButtons,
+        'left': marginFromLeftForButton,
+      });
+
+    $("#edit-mode")
+      .css({
+        'top': marginFromTop + (spaceBetweenButtons * 2),
+        'left': marginFromLeftForButton,
+      });
+
+    $("#reset")
+      .css({
+        'top': marginFromTop + (spaceBetweenButtons * 3),
+        'left': marginFromLeftForButton,
+      });
+
+    $("#helper-mode")
+      .css({
+        'top': marginFromTop,
+        'left': marginFromLeftForRightButton,
+      });
+
+    $("#solve-next")
+      .css({
+        'top': marginFromTop + spaceBetweenButtons,
+        'left': marginFromLeftForRightButton,
+      });
+  }
+
+  // set all attributes on the initial table
+  setSudokuTableAttrs();
+
+  // on resize of the window
+  $(window).resize(() => {
+    // set all attributes for table on resized window
+    setSudokuTableAttrs();
+  });
+
+  // switch off helper mode initially
+  $("#helper-mode-on").addClass("d-none");
+
   var board = new SudokuBoard();
   var intVal = null;
   var blinkCounter = 0;
@@ -14,7 +96,7 @@ $(document).ready(function() {
         currBlinkSelector = null;
       }
     }
-    intVal = setInterval(function() {
+    intVal = setInterval(function () {
       if (blinkCounter == 6) {
         clearInterval(intVal);
         intVal = null;
@@ -36,11 +118,11 @@ $(document).ready(function() {
   }
 
   function updateHelperText() {
-    if ( !$("#helper-mode").hasClass("enabled") ) { return; }
+    if (!$("#helper-mode").hasClass("enabled")) { return; }
 
-    $(".sudoku-cell").each(function() {
+    $(".sudoku-cell").each(function () {
       let matchCellID = /s-([0-9])-([0-9])/g.exec($(this).attr("id"));
-      let cellIndex = {i : parseInt(matchCellID[1]), j : parseInt(matchCellID[2])};
+      let cellIndex = { i: parseInt(matchCellID[1]), j: parseInt(matchCellID[2]) };
       let opts = board.getPossibleOptions(cellIndex.i, cellIndex.j);
       if (opts.length > 0) {
         $(this).addClass("sudoku-help");
@@ -52,13 +134,13 @@ $(document).ready(function() {
   }
 
   // Initial display of sudoku board
-  $("#sudoku-board").html(function() {
+  $("#sudoku-board").html(function () {
     let nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     let i = 0;
     while (i < 9) {
       let j = 0;
       while (j < 9) {
-        let indx = (j+(3*(i%3))+Math.floor(i/3))%9;
+        let indx = (j + (3 * (i % 3)) + Math.floor(i / 3)) % 9;
         board.setValueToCell(i, j, nums[indx]);
         j++;
       }
@@ -86,7 +168,7 @@ $(document).ready(function() {
     }
   }
 
-  $("#edit-mode").click(function() {
+  $("#edit-mode").click(function () {
     $("#edit-grid").addClass("d-none");
     $("#sudoku-board").html(board.getHTML());
 
@@ -96,20 +178,20 @@ $(document).ready(function() {
       mode_change("helper", "off");
       mode_change("edit", "on");
 
-      $(".sudoku-cell").click(function(e) {
+      $(".sudoku-cell").click(function (e) {
         $(".sudoku-cell").removeClass("sudoku-editcell");
         $(this).addClass("sudoku-editcell");
 
         let elementPos = $(this).offset();
         let matchCellID = /s-([0-9])-([0-9])/g.exec($(this).attr("id"));
-        let cellIndex = {i : parseInt(matchCellID[1]), j : parseInt(matchCellID[2])};
+        let cellIndex = { i: parseInt(matchCellID[1]), j: parseInt(matchCellID[2]) };
 
         // Make changes to the edit pane
-        $("#edit-grid").css({top : (elementPos.top + 40) + "px", left : (elementPos.left + 40)+ "px"});
+        $("#edit-grid").css({ top: (elementPos.top + 40) + "px", left: (elementPos.left + 40) + "px" });
         $("#edit-grid").removeClass("d-none");
         let prevVal = $(this).html()
         $("#edit-grid-val").val(prevVal);
-        $("#edit-grid-icon").off().click(function() {
+        $("#edit-grid-icon").off().click(function () {
           $("#edit-grid").addClass("d-none");
           $(`#s-${cellIndex.i}-${cellIndex.j}`).removeClass("sudoku-editcell");
           let enteredVal = $("#edit-grid-val").val().trim();
@@ -143,20 +225,28 @@ $(document).ready(function() {
     }
   });
 
-  $("#helper-mode").click(function() {
+  $("#helper-mode").click(function () {
     $("#sudoku-board").html(board.getHTML());
     $("#edit-grid").addClass("d-none");
 
     if ($(this).hasClass("enabled")) {
+      // disable helper mode
+      $("#helper-mode-on").addClass("d-none");
+      $("#helper-mode-off").removeClass("d-none");
       mode_change("helper", "off");
     } else {
+      // enable helper mode
+      $("#helper-mode-off").addClass("d-none");
+      $("#helper-mode-on").removeClass("d-none");
       mode_change("edit", "off");
       mode_change("helper", "on");
       updateHelperText();
+
+      // set an appropriate size for the helper text
     }
   });
 
-  $("#solve-next").click(function() {
+  $("#solve-next").click(function () {
     if ($(this).prop("disabled")) { return; }
 
     $("#edit-grid").addClass("d-none");
@@ -183,15 +273,13 @@ $(document).ready(function() {
     // Next option would be to make random guesses, which is something we do not do!
   });
 
-  $("#load-random").click(function() {
+  $("#load-random").click(function () {
     board.reset();
     $("#solve-next").prop("disabled", false);
     mode_change("edit", "off");
     mode_change("helper", "off");
     $("#edit-grid").addClass("d-none");
     let indx = Math.floor(Math.random() * sudokus.length);
-    let col_mask = 8
-    let col_num = 0
     for (let [row_num, entry] of sudokus[indx].entries()) {
       let temp_bins = Number(entry).toString().padStart(9, "0").match(/.{1,1}/g);
       for (let col_num = 0; col_num < 9; col_num++) {
@@ -199,9 +287,10 @@ $(document).ready(function() {
       }
     }
     $("#sudoku-board").html(board.getHTML());
+    setSudokuTableAttrs();
   });
 
-  $("#reset").click(function() {
+  $("#reset").click(function () {
     board.reset();
     $("#solve-next").prop("disabled", true);
     $("#sudoku-board").html(board.getHTML());

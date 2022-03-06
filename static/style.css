@@ -1,7 +1,4 @@
 #sudoku-board {
-  width : 700px;
-  height : 700px;
-  margin-top: 100px;
   border: #4f4d47 dashed medium;
   text-align: center;
   table-layout: fixed;
@@ -9,11 +6,7 @@
 
 .sudoku-cell {
   border: #cfcaba dotted medium;
-  width: 77px;
-  height: 77px;
   word-wrap: break-word;
-  padding: 3px;
-  font-size: 20px;
 }
 
 .sudoku-row .sudoku-cell:nth-child(3),
@@ -72,7 +65,6 @@
 
 .sudoku-help {
   background-color: #f7f7f7;
-  font-size: 10px;
 }
 
 #edit-grid {

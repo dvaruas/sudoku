@@ -26,8 +26,8 @@ class SudokuCell {
   get x() { return this.i; }
   get y() { return this.j; }
 
-  get value () { return this.val; }
-  set value (val) {
+  get value() { return this.val; }
+  set value(val) {
     this.val = val;
     if (val != null) {
       // A hard number has been set to this cell, remove all possibilies
@@ -89,7 +89,7 @@ class SudokuBoard {
         tempArr.push(newCell);
         this.rowValidators[i].addToSet(newCell);
         this.columnValidators[j].addToSet(newCell);
-        this.blockValidators[(Math.floor(i/3)*3) + Math.floor(j/3)].addToSet(newCell);
+        this.blockValidators[(Math.floor(i / 3) * 3) + Math.floor(j / 3)].addToSet(newCell);
         j++;
       }
       this.board.push(tempArr);
@@ -113,8 +113,8 @@ class SudokuBoard {
     let i = 0;
     while (i < 9) {
       if (this.rowValidators[i].validate() == false ||
-      this.columnValidators[i].validate() == false ||
-      this.blockValidators[i].validate() == false) {
+        this.columnValidators[i].validate() == false ||
+        this.blockValidators[i].validate() == false) {
         return false;
       }
       i++;
@@ -124,8 +124,8 @@ class SudokuBoard {
 
   validateCell(i, j) {
     return (this.rowValidators[i].validate() &&
-            this.columnValidators[j].validate() &&
-            this.blockValidators[(Math.floor(i/3)*3) + Math.floor(j/3)].validate());
+      this.columnValidators[j].validate() &&
+      this.blockValidators[(Math.floor(i / 3) * 3) + Math.floor(j / 3)].validate());
   }
 
   setValueToCell(i, j, val) {
@@ -147,7 +147,7 @@ class SudokuBoard {
     this.columnValidators[j].objects.forEach(obj => {
       obj.remove_choice_bit = val;
     });
-    this.blockValidators[(Math.floor(i/3)*3) + Math.floor(j/3)].objects.forEach(obj => {
+    this.blockValidators[(Math.floor(i / 3) * 3) + Math.floor(j / 3)].objects.forEach(obj => {
       obj.remove_choice_bit = val;
     });
 
@@ -170,8 +170,8 @@ class SudokuBoard {
     for (let i = 0; i < 9; i++) {
       for (let j = 0; j < 9; j++) {
         if (this.board[i][j].value == null) {
-          if ( !(this.board[i][j].possibilies & (this.board[i][j].possibilies - 1)) ) {
-            return {'x' : i, 'y' : j, 'value' : Math.log2(this.board[i][j].possibilies) + 1};
+          if (!(this.board[i][j].possibilies & (this.board[i][j].possibilies - 1))) {
+            return { 'x': i, 'y': j, 'value': Math.log2(this.board[i][j].possibilies) + 1 };
           }
         } else {
           solvedCount += 1;
@@ -204,13 +204,13 @@ class SudokuBoard {
         for (let i = 0; i < possible_sets.length; i++) {
           let testBitStream = possible_sets[i].possibilies;
           for (let j = 0; j < possible_sets.length; j++) {
-            if ( i != j ) {
+            if (i != j) {
               testBitStream &= ~possible_sets[j].possibilies;
               if (testBitStream == 0) { break; }
             }
           }
-          if ( testBitStream > 0 && !(testBitStream & (testBitStream - 1)) ) {
-            return {x : possible_sets[i].x, y : possible_sets[i].y, value : Math.log2(testBitStream) + 1};
+          if (testBitStream > 0 && !(testBitStream & (testBitStream - 1))) {
+            return { x: possible_sets[i].x, y: possible_sets[i].y, value: Math.log2(testBitStream) + 1 };
           }
         }
       }
@@ -220,25 +220,25 @@ class SudokuBoard {
     let finalSets = [];
     for (let k = 2; k < 9; k++) {
       let matchOpportunities = {
-        "row" : this.rowValidators[k].objects,
-        "column" : this.columnValidators[k].objects,
-        "block" : this.blockValidators[k].objects
+        "row": this.rowValidators[k].objects,
+        "column": this.columnValidators[k].objects,
+        "block": this.blockValidators[k].objects
       };
 
       for (let oType in matchOpportunities) {
         let possible_sets = matchOpportunities[oType].filter(obj => obj.possibilies > 0);
         let elemsList = [];
-        possible_sets.forEach((obj, indx) => elemsList.push({ 'obj' : [obj], 'mask' : (1 << indx) }));
+        possible_sets.forEach((obj, indx) => elemsList.push({ 'obj': [obj], 'mask': (1 << indx) }));
 
-        let comboSet = {1 : elemsList};
+        let comboSet = { 1: elemsList };
         for (let i = 2; i < possible_sets.length; i++) {
           comboSet[i] = [];
-          for (let entry of comboSet[i-1]) {
+          for (let entry of comboSet[i - 1]) {
             for (let singleObj of comboSet[1]) {
               if ((entry.mask | singleObj.mask) != entry.mask) {
                 let newObj = [...entry.obj];
                 newObj.push(singleObj.obj[0]);
-                comboSet[i].push({ 'obj' : newObj, 'mask' : (entry.mask | singleObj.mask)} );
+                comboSet[i].push({ 'obj': newObj, 'mask': (entry.mask | singleObj.mask) });
               }
             }
           }
@@ -249,7 +249,7 @@ class SudokuBoard {
             let objMask = cElem.obj.reduce((res, obj) => res |= obj.possibilies, 0);
             return cElem.obj.length == (Number(objMask).toString(2).match(/1/g) || []).length;
           });
-          checkElements.forEach(elem => finalSets.push({"objs" : elem.obj, "type" : oType}));
+          checkElements.forEach(elem => finalSets.push({ "objs": elem.obj, "type": oType }));
         }
       }
     }
@@ -264,7 +264,7 @@ class SudokuBoard {
       } else if (objList.type == "column") {
         otherObjects = this.columnValidators[objY].objects.filter(obj => !objList.objs.includes(obj));
       } else if (objList.type == "block") {
-        otherObjects = this.blockValidators[(Math.floor(objX/3)*3) + Math.floor(objY/3)].objects.filter(obj => !objList.objs.includes(obj));
+        otherObjects = this.blockValidators[(Math.floor(objX / 3) * 3) + Math.floor(objY / 3)].objects.filter(obj => !objList.objs.includes(obj));
       }
 
       let cumulativeBit = objList.objs.reduce((res, obj) => res |= obj.possibilies, 0);
