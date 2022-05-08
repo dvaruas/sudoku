@@ -1,7 +1,11 @@
 #sudoku-board {
-  border: #4f4d47 dashed medium;
+  border-color: #4f4d47;
+  border-style: dashed;
+  border-width: medium;
   text-align: center;
   table-layout: fixed;
+  border-collapse: collapse;
+  position: fixed;
 }
 
 .sudoku-cell {
@@ -19,77 +23,70 @@
   border-bottom: #696969 solid medium;
 }
 
-#edit-mode.enabled {
-  color: black;
-  background-color: white;
-  font-weight: bold;
-}
-
-#helper-mode.enabled {
-  color: black;
-  background-color: white;
-  font-weight: bold;
-}
-
-.sudoku-editable {
+.sudoku-btn {
+  position: fixed;
+  background-color: transparent;
+  border: 0px;
+  padding: 0px;
+  margin: 0px;
   cursor: pointer;
 }
 
-.sudoku-editable:hover {
-  background-color: #a6a6a6;
-  color: white;
-  font-weight: bold;
-}
-
-.sudoku-help:hover {
-  background-color: #a6a6a6;
-  color: white;
-  font-weight: bold;
-}
-
-.sudoku-editcell {
-  background-color: #2d949c;
+.sudoku-btn:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .sudoku-success {
-  background-color: green;
-  color: white;
-  font-weight: bold;
+  background-color: green !important;
+  color: white !important;
+  font-weight: bold !important;
 }
 
-.sudoku-fail {
-  background-color: red;
-  color: white;
-  font-weight: bold;
+.sudoku-failure {
+  background-color: red !important;
+  color: white !important;
+  font-weight: bold !important;
 }
 
-.sudoku-help {
-  background-color: #f7f7f7;
+.d-none {
+  display: none;
 }
 
-#edit-grid {
-  display: flex;
-  position: absolute;
-  width: 100px;
-  z-index: 10;
-  border: #c4c4c4 solid medium;
-  border-radius: 10px;
-  background-color: #f0f0f0;
-}
-
-#edit-grid-val {
-  width: 40px;
-  border: black solid thin;
-  border-radius: 10px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-
-#edit-grid-icon {
-  opacity: 0.8;
-}
-
-#edit-grid-icon:hover {
-  opacity : 1.0;
+/* When a sudoku cell can be edited */
+.sudoku-editable:hover {
   cursor: pointer;
+  background-color: #a6a6a6;
+  color: white;
+  font-weight: bold;
+}
+
+/* When a sudoku cell has been selected for editing */
+.sudoku-edited {
+  background-color: #a6a6a6;
+  color: white;
+  font-weight: bold;
+}
+
+#edit-panel {
+  position: fixed;
+  margin: 0px;
+  border: 0px;
+  padding: 0px;
+}
+
+.edit-options-btn {
+  cursor: pointer;
+  font-weight: bold;
+  overflow: hidden;
+  background-color: transparent;
+  padding: 0px;
+  border: 2px;
+  border-style: solid;
+}
+
+.edit-options-btn:hover {
+  background-color: black;
+  color: white;
+  border-color: white;
 }
