@@ -1,5 +1,5 @@
 import { HTMLSudokuBoard } from "../board";
-import { DoNotDisplay } from "../selectors";
+import { DoNotDisplay, SudokuCellInHelpMode } from "../selectors";
 import { Button } from "./button";
 
 export class HelperModeButton extends Button {
@@ -42,6 +42,7 @@ export class HelperModeButton extends Button {
     this.helperModeOffIcon.classList.remove(DoNotDisplay);
     this.helperModeOnIcon.classList.add(DoNotDisplay);
     for (let cell of this.board.cells()) {
+      cell.removeClass(SudokuCellInHelpMode);
       cell.render();
     }
   }
@@ -66,9 +67,11 @@ export class HelperModeButton extends Button {
       let speculatedList = cell.speculatedList;
       if (speculatedList.length == 0) {
         // this cell must be already solved since there are no more speculations
+        cell.removeClass(SudokuCellInHelpMode);
         cell.render();
         continue;
       }
+      cell.addClass(SudokuCellInHelpMode);
       cell.render(speculatedList.join(","));
     }
   }

@@ -11,6 +11,8 @@
 .sudoku-cell {
   border: #cfcaba dotted medium;
   word-wrap: break-word;
+  font-family: 'Engagement', cursive;
+  font-weight: bold;
 }
 
 .sudoku-row .sudoku-cell:nth-child(3),
@@ -66,6 +68,12 @@
   background-color: #a6a6a6;
   color: white;
   font-weight: bold;
+}
+
+/* When a sudoku cell has items in helper mode */
+.sudoku-help {
+  background-color: #f7f7f7;
+  font-family: 'Gaegu', cursive;
 }
 
 #edit-panel {
