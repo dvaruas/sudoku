@@ -1,25 +1,26 @@
+from __future__ import annotations
+
 import os
 import re
-
-from typing import Optional, TypeVar
-
+from typing import Optional
 
 JS_PUZZLE_FILE = os.path.join(os.path.dirname(__file__), "preloaded.js")
 
 
-T = TypeVar('T', bound="PuzzleInstance")
 class PuzzleInstance:
-    def __init__(self):
+    board: dict[int, dict[int, int]]
+
+    def __init__(self) -> None:
         self.board = dict.fromkeys(range(9))
         for i in range(9):
             self.board[i] = dict.fromkeys(range(9), 0)
 
     @classmethod
-    def create_from_string(cls: T, string_list: str) -> T:
+    def create_from_string(cls: PuzzleInstance, string_list: str) -> PuzzleInstance:
         neu_obj = cls()
         all_num_strs = [s.strip() for s in string_list.split(",")]
         for i, num_string in enumerate(all_num_strs):
-            num_string = num_string.rjust(9, '0')
+            num_string = num_string.rjust(9, "0")
             for j in range(9):
                 neu_obj.set_value(i, j, int(num_string[j]))
         return neu_obj
@@ -31,8 +32,8 @@ class PuzzleInstance:
         if val == 0:
             # Removing mistaken value
             try:
-                self.board[i][j] = val;
-            except keyError:
+                self.board[i][j] = val
+            except KeyError:
                 pass
             return True
         if self.sanity_checker(i, j, val):
@@ -62,7 +63,10 @@ class PuzzleInstance:
             box_criteria = ((i // 3) * 3) + (j // 3)
             for x in range(9):
                 for y in range(9):
-                    if self.board[x][y] != 0 and ((x // 3) * 3) + (y // 3) == box_criteria:
+                    if (
+                        self.board[x][y] != 0
+                        and ((x // 3) * 3) + (y // 3) == box_criteria
+                    ):
                         box_elems.append(self.board[x][y])
             if (len(set(box_elems))) != len(box_elems):
                 failed = True
@@ -71,9 +75,14 @@ class PuzzleInstance:
 
     def __str__(self) -> str:
         lines = []
-        lines.append("  " + "".join(f"{i:2d}" for i in range(3)) + " " + \
-                     "".join(f"{i:2d}" for i in range(3,6)) + " " + \
-                     "".join(f"{i:2d}" for i in range(6, 9)))
+        lines.append(
+            "  "
+            + "".join(f"{i:2d}" for i in range(3))
+            + " "
+            + "".join(f"{i:2d}" for i in range(3, 6))
+            + " "
+            + "".join(f"{i:2d}" for i in range(6, 9))
+        )
         for i in range(9):
             line = ""
             if i % 3 == 0:
@@ -85,9 +94,9 @@ class PuzzleInstance:
                     line += " "
                 line += f"{self.board[i][j]:2d}" if self.board[i][j] > 0 else " -"
             lines.append(line)
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
-    def __eq__(self, other: T) -> bool:
+    def __eq__(self, other: PuzzleInstance) -> bool:
         for i in range(9):
             for j in range(9):
                 if self.get_value(i, j) != other.get_value(i, j):
@@ -118,7 +127,9 @@ class PuzzleSet:
         return any([other_obj == obj for other_obj in self.puzzles])
 
     def get_writable_data(self) -> str:
-        return "[{}]".format(",".join([obj.get_writable_data() for obj in self.puzzles]))
+        return "[{}]".format(
+            ",".join([obj.get_writable_data() for obj in self.puzzles])
+        )
 
 
 if __name__ == "__main__":
@@ -129,9 +140,8 @@ if __name__ == "__main__":
     while continue_script:
         print(obj)
         try:
-            i = int(input("\nEnter row number : "))
-            j = int(input("Enter column number : "))
-            val = int(input("Enter Value : "))
+            inp = input("\nEnter: row column value ==> ")
+            i, j, val = [int(x) for x in inp.split()]
             if obj.set_value(i, j, val) == False:
                 print("\nWas unable to set the value")
         except ValueError:
@@ -144,7 +154,11 @@ if __name__ == "__main__":
 
     choice = "n"
     while continue_script:
-        choice = input("\nWould you like to save new puzzle data? (y/n) : ").strip()
+        choice = "n"
+        try:
+            choice = input("\nWould you like to save new puzzle data? (y/n) : ").strip()
+        except KeyboardInterrupt:
+            pass
         if choice in ["y", "n"]:
             break
 
